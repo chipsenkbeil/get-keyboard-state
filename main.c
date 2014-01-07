@@ -19,7 +19,7 @@ int main(void)
     ssize_t n;
     int fd;
 
-    fd = open(dev, O_RDONLY);
+    fd = open(dev, O_RDONLY | O_NONBLOCK);
     if (fd == -1) {
         fprintf(stderr, "Cannot open %s: %s.\n", dev, strerror(errno));
         return EXIT_FAILURE;
@@ -27,8 +27,11 @@ int main(void)
 
     while (1) {
         n = read(fd, &ev, sizeof ev);
+
         if (n == (ssize_t)-1) {
             if (errno == EINTR)
+                continue;
+            else if (errno == EAGAIN)
                 continue;
             else
                 break;
